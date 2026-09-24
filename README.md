@@ -1,74 +1,44 @@
-# RegistryDesk - Office File Management & Custody Tracking System
+# Registry Office File Tracker
 
-A specialized, high-performance file tracking and records custody management system built for the **Registry Office** to manage files within a single office.
-
----
-
-## 🎯 Key Highlights & Solved Problems
-
-1. **Instant Location Lookup**:
-   - **"Where is this file right now?"**
-     - **If in the Office**: Shows the exact **Cabinet**, **Shelf/Drawer**, and **Box/Folder** (e.g., *Cabinet A - Administration, Shelf 2, Box 04*).
-     - **If Issued Out**: Shows **Who has the file** (Officer Name, Department/Room, Extension/Phone, Date Checked Out, and Expected Return Date).
-2. **Location Comments & Remarks**:
-   - Add notes regarding the physical location of any file at any time (e.g., *"Temporarily placed on Supervisor's desk for afternoon audit"*, *"Moved to Shelf 3 for space consolidation"*).
-   - Every comment is timestamped and stored in the file's permanent location timeline.
-3. **Custody & Movement Lifecycle**:
-   - **Issue / Check-out**: Record recipient officer, department, contact, purpose, and scheduled return date.
-   - **Return / Check-in**: Return file back into designated or updated cabinet and shelf.
-   - **Direct Transfer**: Hand over file directly from one officer to another.
-   - **Full Movement Audit Trail**: View complete chronological chain of custody for every docket.
-4. **Office Cabinet Directory & Visual Map**:
-   - Visual view of all storage cabinets in the office with shelf breakdown and active file counts.
-   - One-click filter to view all files inside any specific cabinet.
-5. **Inward & Outward Correspondence Registry (Dispatch Book)**:
-   - Log received incoming mail/memos (Inward) and outgoing dispatches (Outward), linked directly to office files.
-6. **Overdue Alerts & Due Date Tracking**:
-   - Highlighted alerts for files exceeding their return date with one-click follow-up logging and printable overdue lists.
-7. **Print & Export**:
-   - One-click printable **File Routing / Movement Docket Slip** with officer signature section.
-   - Export office file inventory to Excel-compatible CSV.
+A simple, fast, and focused file tracking system built for the **Registry Office** to manage files within a single office.
 
 ---
 
-## 🚀 Running the Application
-
-### 1. Start the Server
-In PowerShell or Command Prompt within the project directory:
-```bash
-npm start
-```
-*(Or with live auto-reload: `npm run dev`)*
-
-### 2. Access the Application
-Open your web browser and navigate to:
-```
-http://localhost:3000
-```
-
----
-
-## 📂 Project Architecture
-
-```
-c:\Users\usr\Desktop\TRACKER\
-├── server.js               # Express 5 API server & routing
-├── database.js             # SQLite database schema, WAL mode, & seed data
-├── package.json            # Scripts and dependencies
-├── data/
-│   └── registry.db         # Persistent SQLite database
-└── public/
-    ├── index.html          # Responsive single-page application
-    ├── css/
-    │   └── style.css       # Custom modern CSS design system
-    └── js/
-        └── app.js          # Interactive frontend logic & API client
-```
+## 🎯 Purpose & Design
+The system is built to be as simple to use as possible:
+- Files have **only 4 details**:
+  1. **REFERENCE NUMBER**
+  2. **NAME** (Beneficiary / Owner)
+  3. **FARM NAME**
+  4. **DISTRICT**
+- Real-time instant search: Search across Reference Number, Name, Farm Name, or District.
+- The Registry Officer can find any file in seconds and **give it to whoever wants it** with one click.
+- Know immediately:
+  - **If in the office**: Which **Cabinet** and **Shelf** is it in?
+  - **If given out**: **Who has it** and when was it taken?
+- Add remarks/comments regarding file location anytime.
 
 ---
 
-## 🛠️ Technology Stack
-- **Backend**: Node.js, Express 5
-- **Database**: SQLite (via `better-sqlite3` with WAL mode for fast queries)
-- **Frontend**: Modern Vanilla JS (ES6+), Semantic HTML5, Custom CSS Design System
-- **Fonts**: Google Fonts *Plus Jakarta Sans* & *JetBrains Mono*
+## 🚀 How to Run
+
+1. Open your terminal in this folder:
+   ```bash
+   npm start
+   ```
+2. Open your web browser and go to:
+   ```
+   http://localhost:3000
+   ```
+
+---
+
+## 📋 Features
+
+- **Instant Search**: Type any part of a Reference Number, Person Name, Farm Name, or District.
+- **Give File (1-Click)**: Click **"📤 Give File"**, type who is taking it, and save.
+- **Return File (1-Click)**: Click **"📥 Return to Cabinet"**, choose the cabinet/shelf, and save.
+- **Location Comments**: Add or update remarks on file placement anytime.
+- **Custody History**: View the full timeline of who took the file, when it was returned, and all notes.
+- **Excel / CSV Import**: Upload your spreadsheet with columns `REFERENCE NUMBER`, `FARM NAME`, `NAME`, `DISTRICT` (or Google Sheets link).
+- **Export to CSV**: Download your current office registry inventory at any time.

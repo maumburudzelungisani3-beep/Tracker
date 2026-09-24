@@ -3,1086 +3,394 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RegistryDesk - Office File Management & Movement System</title>
-  <meta name="description" content="Dedicated Registry Office File Management System to track physical file locations, cabinets, officer custody, location comments, and correspondence.">
+  <title>Registry Office File Tracker</title>
+  <meta name="description" content="Simple and fast Registry Office file tracking system for reference numbers, farm names, owner names, districts, cabinet locations and custody.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Top Header -->
-    <header class="app-header">
-      <div class="header-container">
-        <div class="brand">
-          <div class="brand-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
-              <circle cx="12" cy="13" r="2"></circle>
-              <path d="m13.4 14.4 2.6 2.6"></path>
-            </svg>
-          </div>
-          <div class="brand-text">
-            <h1>RegistryDesk</h1>
-            <span class="office-tag">Registry Office File Custody & Location System</span>
-          </div>
-        </div>
 
-        <!-- Quick Top Search / Where is my file? -->
-        <div class="header-quick-search">
-          <div class="search-input-wrap">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="global-search" placeholder="Type file number, subject, officer name, or cabinet..." autocomplete="off">
-            <button class="clear-search-btn" id="btn-clear-search" title="Clear search" style="display: none;">&times;</button>
-          </div>
-        </div>
-
-        <!-- Header Actions -->
-        <div class="header-actions">
-          <button class="btn btn-secondary" id="btn-open-import-modal" title="Import from Excel Spreadsheet or Google Sheets">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            Import Excel / Sheets
-          </button>
-          <button class="btn btn-secondary" id="btn-export-csv" title="Export File Inventory to Excel / CSV">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Export CSV
-          </button>
-          <button class="btn btn-primary" id="btn-open-new-file-modal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            New Office File
-          </button>
+  <!-- Top App Bar -->
+  <header class="top-nav">
+    <div class="nav-wrapper">
+      <div class="brand">
+        <div class="brand-icon">📁</div>
+        <div>
+          <h1>Registry Office File Tracker</h1>
+          <p class="brand-subtitle">Manage files, search locations, and track who was given the file</p>
         </div>
       </div>
-    </header>
 
-    <!-- Main Navigation Bar -->
-    <nav class="sub-nav">
-      <div class="nav-container">
-        <ul class="nav-tabs" id="main-nav-tabs">
-          <li>
-            <button class="nav-tab active" data-tab="tab-files">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span>Files & Custody Tracker</span>
-              <span class="tab-badge" id="badge-total-files">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="nav-tab" data-tab="tab-cabinets">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="3" y1="15" x2="21" y2="15"></line>
-                <circle cx="12" cy="6" r="1"></circle>
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="12" cy="18" r="1"></circle>
-              </svg>
-              <span>Cabinets & Shelves</span>
-              <span class="tab-badge" id="badge-cabinets-count">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="nav-tab" data-tab="tab-correspondence">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-              </svg>
-              <span>Inward & Outward Register</span>
-              <span class="tab-badge" id="badge-corr-count">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="nav-tab" data-tab="tab-overdue">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>Overdue Follow-ups</span>
-              <span class="tab-badge alert-badge" id="badge-overdue-count">0</span>
-            </button>
-          </li>
-        </ul>
-
-        <div class="user-pill">
-          <span class="status-dot"></span>
-          <span class="user-role">Registry Desk Active</span>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Main Content Body -->
-    <main class="main-container">
-      
-      <!-- Key Metric Highlight Strip -->
-      <section class="metrics-grid">
-        <div class="metric-card" id="card-filter-all" data-status-filter="all">
-          <div class="metric-icon bg-indigo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">Total Office Files</span>
-            <div class="metric-value-wrap">
-              <h2 class="metric-value" id="stat-total-files">--</h2>
-              <span class="metric-sub">Registered</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card" id="card-filter-in-office" data-status-filter="in_office">
-          <div class="metric-icon bg-emerald">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">In Office (In Cabinet)</span>
-            <div class="metric-value-wrap">
-              <h2 class="metric-value" id="stat-in-office">--</h2>
-              <span class="metric-sub tag-success">Available in shelves</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card" id="card-filter-issued" data-status-filter="issued">
-          <div class="metric-icon bg-amber">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <polyline points="16 11 18 13 22 9"></polyline>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">Issued Out (With Officer)</span>
-            <div class="metric-value-wrap">
-              <h2 class="metric-value" id="stat-issued-out">--</h2>
-              <span class="metric-sub tag-warning">On active desk</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-card alert" id="card-filter-overdue" data-status-filter="overdue">
-          <div class="metric-icon bg-crimson">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-              <line x1="12" y1="9" x2="12" y2="13"></line>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-          </div>
-          <div class="metric-info">
-            <span class="metric-label">Overdue Return</span>
-            <div class="metric-value-wrap">
-              <h2 class="metric-value" id="stat-overdue">--</h2>
-              <span class="metric-sub tag-danger">Requires follow-up</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- TAB 1: FILES & CUSTODY TRACKER (PRIMARY VIEW) -->
-      <!-- ============================================== -->
-      <section class="tab-pane active" id="tab-files">
-        
-        <!-- Controls: Filters, Cabinets, Search -->
-        <div class="panel-controls">
-          <div class="filter-group">
-            <label class="control-label">Status Filter:</label>
-            <div class="segmented-control" id="status-filter-buttons">
-              <button class="segment-btn active" data-status="all">All Files</button>
-              <button class="segment-btn" data-status="in_office">In Office</button>
-              <button class="segment-btn" data-status="issued">Issued / Borrowed</button>
-              <button class="segment-btn danger-segment" data-status="overdue">Overdue Only</button>
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <label class="control-label">Cabinet:</label>
-            <select id="filter-cabinet" class="select-input">
-              <option value="all">All Cabinets</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label class="control-label">Category:</label>
-            <select id="filter-category" class="select-input">
-              <option value="all">All Categories</option>
-              <option value="Administration">Administration</option>
-              <option value="Human Resources">Human Resources</option>
-              <option value="Finance & Procurement">Finance & Procurement</option>
-              <option value="Legal & Compliance">Legal & Compliance</option>
-              <option value="Projects & Operations">Projects & Operations</option>
-              <option value="General">General</option>
-            </select>
-          </div>
-
-          <div class="filter-group align-end">
-            <button class="btn btn-outline" id="btn-refresh-files" title="Refresh files list">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-              </svg>
-              Refresh
-            </button>
-          </div>
-        </div>
-
-        <!-- Files Data Table / Card View -->
-        <div class="table-container">
-          <div class="table-header-info">
-            <div class="results-summary">
-              <span id="files-count-summary">Showing records</span>
-              <span id="active-filter-tag" class="filter-indicator" style="display: none;"></span>
-            </div>
-            <div class="legend">
-              <span class="legend-item"><span class="dot in-office"></span> In Cabinet</span>
-              <span class="legend-item"><span class="dot issued"></span> With Officer</span>
-              <span class="legend-item"><span class="dot overdue"></span> Overdue</span>
-            </div>
-          </div>
-
-          <table class="data-table" id="table-files">
-            <thead>
-              <tr>
-                <th style="width: 14%;">File Number</th>
-                <th style="width: 25%;">File Subject / Title</th>
-                <th style="width: 12%;">Category</th>
-                <th style="width: 24%;">Current Custody / Physical Location</th>
-                <th style="width: 10%;">Status</th>
-                <th style="width: 15%; text-align: right;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="files-table-body">
-              <!-- Dynamically populated via JS -->
-            </tbody>
-          </table>
-
-          <div id="files-empty-state" class="empty-state" style="display: none;">
-            <div class="empty-icon">📁</div>
-            <h3>No files match the search criteria</h3>
-            <p>Try searching with another keyword or resetting the status and cabinet filters.</p>
-            <button class="btn btn-secondary" id="btn-reset-filters">Reset All Filters</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- TAB 2: CABINETS & SHELVES (OFFICE STORAGE MAP) -->
-      <!-- ============================================== -->
-      <section class="tab-pane" id="tab-cabinets">
-        <div class="cabinets-header-row">
-          <div>
-            <h2 class="section-title">Office Physical Cabinets & Shelving Directory</h2>
-            <p class="section-subtitle">Visual breakdown of storage furniture inside this registry office and file locations.</p>
-          </div>
-          <button class="btn btn-secondary" id="btn-new-cabinet">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add New Cabinet
-          </button>
-        </div>
-
-        <div class="cabinets-grid" id="cabinets-grid">
-          <!-- Dynamically populated with interactive cabinet visual cards -->
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- TAB 3: INWARD & OUTWARD DISPATCH REGISTER -->
-      <!-- ============================================== -->
-      <section class="tab-pane" id="tab-correspondence">
-        <div class="corr-header-row">
-          <div>
-            <h2 class="section-title">Official Inward & Outward Correspondence Registry</h2>
-            <p class="section-subtitle">Incoming letters/memos received and outgoing correspondence dispatched from the office.</p>
-          </div>
-          <div class="corr-actions">
-            <button class="btn btn-secondary" id="btn-log-inward">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <polyline points="9 21 3 21 3 15"></polyline>
-                <line x1="21" y1="3" x2="14" y2="10"></line>
-                <line x1="3" y1="21" x2="10" y2="14"></line>
-              </svg>
-              Log Inward Mail
-            </button>
-            <button class="btn btn-primary" id="btn-log-outward">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-              Log Outward Dispatch
-            </button>
-          </div>
-        </div>
-
-        <!-- Filter Bar -->
-        <div class="panel-controls">
-          <div class="filter-group">
-            <label class="control-label">Type:</label>
-            <div class="segmented-control" id="corr-type-filters">
-              <button class="segment-btn active" data-corr-type="all">All Entries</button>
-              <button class="segment-btn" data-corr-type="inward">Inward (Received)</button>
-              <button class="segment-btn" data-corr-type="outward">Outward (Dispatched)</button>
-            </div>
-          </div>
-          <div class="filter-group flex-grow">
-            <label class="control-label">Search Dispatch Book:</label>
-            <input type="text" id="corr-search-input" class="text-input" placeholder="Search reference number, sender, recipient, subject...">
-          </div>
-        </div>
-
-        <!-- Correspondence Table -->
-        <div class="table-container">
-          <table class="data-table" id="table-corr">
-            <thead>
-              <tr>
-                <th style="width: 10%;">Type</th>
-                <th style="width: 14%;">Ref Number</th>
-                <th style="width: 12%;">Date</th>
-                <th style="width: 18%;">Sender / Recipient</th>
-                <th style="width: 26%;">Subject</th>
-                <th style="width: 12%;">Linked File</th>
-                <th style="width: 8%;">Status</th>
-              </tr>
-            </thead>
-            <tbody id="corr-table-body">
-              <!-- Dynamically populated via JS -->
-            </tbody>
-          </table>
-          <div id="corr-empty-state" class="empty-state" style="display: none;">
-            <div class="empty-icon">📬</div>
-            <h3>No correspondence records found</h3>
-            <p>Log incoming mail or outgoing dispatches using the buttons above.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============================================== -->
-      <!-- TAB 4: OVERDUE FILES & FOLLOW-UPS -->
-      <!-- ============================================== -->
-      <section class="tab-pane" id="tab-overdue">
-        <div class="overdue-banner">
-          <div class="banner-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-          <div class="banner-content">
-            <h3>Files Overdue for Return to Registry</h3>
-            <p>The files listed below have exceeded their scheduled return date. Officers should be reminded or visited for file return.</p>
-          </div>
-          <button class="btn btn-outline" id="btn-print-overdue" onclick="window.print()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print Follow-up List
-          </button>
-        </div>
-
-        <div class="table-container">
-          <table class="data-table" id="table-overdue">
-            <thead>
-              <tr>
-                <th style="width: 14%;">File Number</th>
-                <th style="width: 24%;">File Subject</th>
-                <th style="width: 20%;">Current Officer / Department</th>
-                <th style="width: 12%;">Due Date</th>
-                <th style="width: 12%;">Days Overdue</th>
-                <th style="width: 18%; text-align: right;">Quick Action</th>
-              </tr>
-            </thead>
-            <tbody id="overdue-table-body">
-              <!-- Dynamically populated via JS -->
-            </tbody>
-          </table>
-          <div id="overdue-empty-state" class="empty-state" style="display: none;">
-            <div class="empty-icon">✅</div>
-            <h3>All files are on schedule!</h3>
-            <p>There are currently no overdue files out in other offices.</p>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL 1: FILE DOSSIER (DETAILED VIEW + COMMENTS + HISTORY) -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-dossier" style="display: none;">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-header">
-        <div class="modal-header-left">
-          <div class="badge-tag-wrap">
-            <span class="file-code-badge" id="dossier-file-number">REG-000</span>
-            <span class="status-pill" id="dossier-status-pill">In Office</span>
-          </div>
-          <h2 class="modal-title" id="dossier-file-title">File Title</h2>
-        </div>
-        <button class="modal-close-btn" id="btn-close-dossier" title="Close">&times;</button>
-      </div>
-
-      <div class="modal-body dossier-body">
-        
-        <!-- Big highlight: WHERE IS THIS FILE RIGHT NOW? -->
-        <div class="location-spotlight" id="dossier-spotlight">
-          <!-- Dynamically populated with prominent location card (Officer or Cabinet) -->
-        </div>
-
-        <!-- Dossier Navigation Tabs -->
-        <div class="dossier-tabs-nav">
-          <button class="d-tab-btn active" data-dtab="dtab-location-comments">
-            💬 Location Comments & Remarks (<span id="dossier-comments-count">0</span>)
-          </button>
-          <button class="d-tab-btn" data-dtab="dtab-movement-history">
-            🔄 Movement History & Audit Log (<span id="dossier-movements-count">0</span>)
-          </button>
-          <button class="d-tab-btn" data-dtab="dtab-correspondence">
-            📬 Linked Mail & Memos (<span id="dossier-corr-count">0</span>)
-          </button>
-          <button class="d-tab-btn" data-dtab="dtab-details">
-            📋 File Metadata
-          </button>
-        </div>
-
-        <!-- Dossier Tab Content 1: Location Comments -->
-        <div class="dossier-tab-content active" id="dtab-location-comments">
-          <div class="add-comment-card">
-            <h4>Add Comment Regarding File Location</h4>
-            <p class="text-muted">Record any note regarding where this file is currently kept, desk changes, or temporary transit.</p>
-            <form id="form-add-comment">
-              <input type="hidden" id="comment-file-id">
-              <div class="comment-input-row">
-                <textarea id="comment-text" class="text-input" rows="2" placeholder="e.g. Moved temporarily to Desk 4 for Deputy Director signature, or Stored in bottom drawer..." required></textarea>
-              </div>
-              <div class="comment-footer-row">
-                <input type="text" id="comment-author" class="text-input text-input-sm" placeholder="Your Name / Role (Default: Registry Clerk)" value="Registry Clerk">
-                <button type="submit" class="btn btn-primary btn-sm">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                  </svg>
-                  Save Location Note
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div class="comments-timeline" id="dossier-comments-timeline">
-            <!-- Dynamically populated comments -->
-          </div>
-        </div>
-
-        <!-- Dossier Tab Content 2: Movement History -->
-        <div class="dossier-tab-content" id="dtab-movement-history">
-          <div class="movement-timeline" id="dossier-movement-timeline">
-            <!-- Dynamically populated movement logs -->
-          </div>
-        </div>
-
-        <!-- Dossier Tab Content 3: Linked Correspondence -->
-        <div class="dossier-tab-content" id="dtab-correspondence">
-          <div id="dossier-corr-list">
-            <!-- Dynamically populated correspondence -->
-          </div>
-        </div>
-
-        <!-- Dossier Tab Content 4: Metadata -->
-        <div class="dossier-tab-content" id="dtab-details">
-          <div class="metadata-grid">
-            <div class="meta-item">
-              <span class="meta-label">Category:</span>
-              <span class="meta-val" id="dossier-meta-category">--</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Default Cabinet:</span>
-              <span class="meta-val" id="dossier-meta-cabinet">--</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Shelf / Drawer:</span>
-              <span class="meta-val" id="dossier-meta-shelf">--</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Box / Docket No:</span>
-              <span class="meta-val" id="dossier-meta-box">--</span>
-            </div>
-            <div class="meta-item full-width">
-              <span class="meta-label">Description / Scope:</span>
-              <p class="meta-desc" id="dossier-meta-desc">--</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="modal-footer dossier-footer">
-        <div class="dossier-footer-actions-left">
-          <button class="btn btn-outline btn-sm" id="btn-print-slip" title="Print File Routing Slip">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print File Docket Slip
-          </button>
-        </div>
-        <div class="dossier-footer-actions-right" id="dossier-action-buttons">
-          <!-- Dynamic Action Buttons depending on file status: Check out, Check in, Transfer, Edit -->
-        </div>
+      <div class="nav-actions">
+        <button class="btn btn-secondary" id="btn-open-import" title="Import from Excel or CSV spreadsheet">
+          📥 Import Excel / CSV
+        </button>
+        <button class="btn btn-secondary" id="btn-export-csv" title="Download Excel-compatible CSV">
+          📤 Export CSV
+        </button>
+        <button class="btn btn-primary" id="btn-open-add-file">
+          + Add New File
+        </button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- ============================================== -->
-  <!-- MODAL 2: CHECK-OUT (ISSUE FILE TO OFFICER) -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-checkout" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">Issue File to Officer</h3>
-        <button class="modal-close-btn" id="btn-close-checkout">&times;</button>
+  <!-- Main Container -->
+  <main class="page-container">
+
+    <!-- Big Instant Search Bar -->
+    <section class="search-section">
+      <div class="search-bar-wrap">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by Reference Number, Name, Farm Name, or District..." 
+          autocomplete="off"
+          autofocus
+        >
+        <button id="btn-clear-search" class="clear-btn" style="display: none;">&times;</button>
       </div>
-      <form id="form-checkout">
-        <div class="modal-body">
-          <div class="selected-file-banner">
-            <span class="file-code" id="checkout-file-code">REG-000</span>
-            <strong id="checkout-file-title">File Subject</strong>
+    </section>
+
+    <!-- Quick Status Cards / Filter Buttons -->
+    <section class="status-summary-grid">
+      <div class="summary-card active" id="card-filter-all" data-status="all">
+        <div class="summary-count" id="stat-total">0</div>
+        <div class="summary-label">Total Files</div>
+        <div class="summary-hint">All office records</div>
+      </div>
+
+      <div class="summary-card in-office" id="card-filter-in-office" data-status="in_office">
+        <div class="summary-count text-green" id="stat-in-office">0</div>
+        <div class="summary-label">In Office (In Cabinet)</div>
+        <div class="summary-hint">Available to be given out</div>
+      </div>
+
+      <div class="summary-card given-out" id="card-filter-given-out" data-status="given_out">
+        <div class="summary-count text-orange" id="stat-given-out">0</div>
+        <div class="summary-label">Given Out (With Someone)</div>
+        <div class="summary-hint">Currently out of the office</div>
+      </div>
+    </section>
+
+    <!-- Filter Dropdown Bar -->
+    <div class="filter-bar">
+      <div class="filter-left">
+        <span class="results-badge" id="results-count-text">Showing files</span>
+      </div>
+
+      <div class="filter-right">
+        <div class="filter-item">
+          <label for="filter-cabinet">Cabinet:</label>
+          <select id="filter-cabinet" class="select-box">
+            <option value="all">All Cabinets</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filter-district">District:</label>
+          <select id="filter-district" class="select-box">
+            <option value="all">All Districts</option>
+          </select>
+        </div>
+
+        <button class="btn btn-sm btn-outline" id="btn-refresh" title="Reload records">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- The Primary Files Table -->
+    <div class="table-card">
+      <table class="files-table" id="files-table">
+        <thead>
+          <tr>
+            <th style="width: 14%;">REFERENCE NUMBER</th>
+            <th style="width: 18%;">NAME</th>
+            <th style="width: 18%;">FARM NAME</th>
+            <th style="width: 12%;">DISTRICT</th>
+            <th style="width: 18%;">CURRENT LOCATION / WHO HAS IT</th>
+            <th style="width: 20%; text-align: right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody id="files-table-body">
+          <!-- Dynamically populated rows -->
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div id="table-empty-state" class="empty-state" style="display: none;">
+        <div class="empty-icon">📂</div>
+        <h3>No files found</h3>
+        <p>No records match your search query. Try typing another name, reference number, or district.</p>
+        <button class="btn btn-secondary" id="btn-reset-search">Clear Search Filters</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================================================== -->
+  <!-- MODAL 1: GIVE FILE TO WHOEVER WANTS IT               -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-give" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>📤 Give File to Officer / Person</h2>
+        <button class="modal-x" id="btn-close-give">&times;</button>
+      </div>
+      <form id="form-give">
+        <input type="hidden" id="give-file-id">
+        <div class="modal-content">
+          <div class="file-summary-box">
+            <div class="f-ref" id="give-display-ref">REF-000</div>
+            <div class="f-name" id="give-display-name">Name</div>
+            <div class="f-farm" id="give-display-farm">Farm Name &bull; District</div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="checkout-officer-name">Recipient Officer Name *</label>
-              <input type="text" id="checkout-officer-name" class="text-input" placeholder="e.g. David Banda, Sarah Connor" required>
-            </div>
+          <div class="form-field">
+            <label for="give-person">Who is taking the file? (Name / Officer) *</label>
+            <input type="text" id="give-person" class="input-text" placeholder="e.g. David Banda, Officer Sarah, Mr. Nyathi..." required autofocus>
           </div>
 
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="checkout-officer-dept">Department / Room / Desk</label>
-              <input type="text" id="checkout-officer-dept" class="text-input" placeholder="e.g. Directorate Room 204">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="checkout-officer-contact">Phone / Extension</label>
-              <input type="text" id="checkout-officer-contact" class="text-input" placeholder="e.g. Ext. 2405 / +260...">
-            </div>
+          <div class="form-field">
+            <label for="give-date">Date & Time Given</label>
+            <input type="text" id="give-date" class="input-text">
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="checkout-due-date">Scheduled Return Date</label>
-              <input type="date" id="checkout-due-date" class="text-input">
-              <span class="field-hint">Leave blank or select expected return date</span>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="checkout-remarks">Reason for Issue / Location Remarks</label>
-              <textarea id="checkout-remarks" class="text-input" rows="2" placeholder="e.g. Needed for Committee review on Thursday, or Appraisal assessment..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="checkout-performed-by">Issued By (Registry Clerk)</label>
-              <input type="text" id="checkout-performed-by" class="text-input" value="Registry Clerk">
-            </div>
+          <div class="form-field">
+            <label for="give-comment">Location Comment / Remarks Regarding Location</label>
+            <textarea id="give-comment" class="input-text" rows="2" placeholder="e.g. Taken to Valuations Room 102 for assessment signature..."></textarea>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-checkout">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm Issue File</button>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-give">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm & Give File</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- MODAL 3: CHECK-IN (RETURN FILE TO CABINET) -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-checkin" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">Return File to Registry Office</h3>
-        <button class="modal-close-btn" id="btn-close-checkin">&times;</button>
+  <!-- ==================================================== -->
+  <!-- MODAL 2: RETURN FILE TO CABINET                     -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-return" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>📥 Return File into Cabinet</h2>
+        <button class="modal-x" id="btn-close-return">&times;</button>
       </div>
-      <form id="form-checkin">
-        <div class="modal-body">
-          <div class="selected-file-banner">
-            <span class="file-code" id="checkin-file-code">REG-000</span>
-            <strong id="checkin-file-title">File Subject</strong>
-          </div>
-
-          <div class="info-callout">
-            Currently held by: <strong id="checkin-current-holder">Officer Name</strong>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="checkin-cabinet">Place Back in Cabinet *</label>
-              <select id="checkin-cabinet" class="select-input" required></select>
-            </div>
+      <form id="form-return">
+        <input type="hidden" id="return-file-id">
+        <div class="modal-content">
+          <div class="file-summary-box">
+            <div class="f-ref" id="return-display-ref">REF-000</div>
+            <div class="f-name" id="return-display-name">Name</div>
+            <div class="f-sub" id="return-display-holder" style="color:#d97706; font-weight:600; margin-top:4px;">Currently with: Officer Name</div>
           </div>
 
           <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="checkin-shelf">Shelf / Drawer</label>
-              <input type="text" id="checkin-shelf" class="text-input" placeholder="e.g. Shelf 2, Drawer 1">
+            <div class="form-field">
+              <label for="return-cabinet">Place Back in Cabinet *</label>
+              <select id="return-cabinet" class="select-box" required></select>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="checkin-box">Box / Docket Number</label>
-              <input type="text" id="checkin-box" class="text-input" placeholder="e.g. Box 04">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="checkin-remarks">Return Condition & Location Note</label>
-              <textarea id="checkin-remarks" class="text-input" rows="2" placeholder="e.g. Returned intact with 4 signed enclosures. Stored back in Cabinet A Shelf 2."></textarea>
+            <div class="form-field">
+              <label for="return-shelf">Shelf / Drawer</label>
+              <input type="text" id="return-shelf" class="input-text" placeholder="e.g. Shelf 1, Shelf 2" value="Shelf 1">
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="checkin-performed-by">Received By (Registry Clerk)</label>
-              <input type="text" id="checkin-performed-by" class="text-input" value="Registry Clerk">
-            </div>
+          <div class="form-field">
+            <label for="return-comment">Location Comment / Return Notes</label>
+            <textarea id="return-comment" class="input-text" rows="2" placeholder="e.g. Returned intact, placed on top shelf."></textarea>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-checkin">Cancel</button>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-return">Cancel</button>
           <button type="submit" class="btn btn-success">Confirm Return into Cabinet</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- MODAL 4: DIRECT TRANSFER TO ANOTHER OFFICER -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-transfer" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">Transfer File to Another Officer</h3>
-        <button class="modal-close-btn" id="btn-close-transfer">&times;</button>
+  <!-- ==================================================== -->
+  <!-- MODAL 3: ADD LOCATION COMMENT                       -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-comment" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>💬 Add Comment Regarding File Location</h2>
+        <button class="modal-x" id="btn-close-comment">&times;</button>
       </div>
-      <form id="form-transfer">
-        <div class="modal-body">
-          <div class="selected-file-banner">
-            <span class="file-code" id="transfer-file-code">REG-000</span>
-            <strong id="transfer-file-title">File Subject</strong>
+      <form id="form-comment">
+        <input type="hidden" id="comment-file-id">
+        <div class="modal-content">
+          <div class="file-summary-box">
+            <div class="f-ref" id="comment-display-ref">REF-000</div>
+            <div class="f-name" id="comment-display-name">Name</div>
+            <div class="f-sub" id="comment-display-current-loc">Location: Cabinet A, Shelf 1</div>
           </div>
 
-          <div class="info-callout">
-            Current Custodian: <strong id="transfer-current-holder">Officer Name</strong>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="transfer-new-officer">New Officer / Recipient *</label>
-              <input type="text" id="transfer-new-officer" class="text-input" placeholder="e.g. Sarah Connor, Dr. Banda" required>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="transfer-new-dept">New Department / Room</label>
-              <input type="text" id="transfer-new-dept" class="text-input" placeholder="e.g. Finance Directorate">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="transfer-new-contact">Contact / Phone</label>
-              <input type="text" id="transfer-new-contact" class="text-input" placeholder="e.g. Ext. 1102">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="transfer-due-date">New Expected Return Date</label>
-              <input type="date" id="transfer-due-date" class="text-input">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="transfer-remarks">Transfer Remarks</label>
-              <textarea id="transfer-remarks" class="text-input" rows="2" placeholder="e.g. Passed from HR to Legal Counsel for contract clause verification."></textarea>
-            </div>
+          <div class="form-field">
+            <label for="input-comment-text">Location Comment / Remark *</label>
+            <textarea id="input-comment-text" class="input-text" rows="3" placeholder="e.g. Temporarily placed on Supervisor desk for afternoon audit..." required autofocus></textarea>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-transfer">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm Transfer</button>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-comment">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Location Comment</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- MODAL 5: CREATE NEW FILE -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-new-file" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">Register New Office File</h3>
-        <button class="modal-close-btn" id="btn-close-new-file">&times;</button>
-      </div>
-      <form id="form-new-file">
-        <div class="modal-body">
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="new-file-number">File Reference Number *</label>
-              <input type="text" id="new-file-number" class="text-input font-mono" placeholder="e.g. REG-ADM-2026-007" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="new-file-category">Category *</label>
-              <select id="new-file-category" class="select-input" required>
-                <option value="Administration">Administration</option>
-                <option value="Human Resources">Human Resources</option>
-                <option value="Finance & Procurement">Finance & Procurement</option>
-                <option value="Legal & Compliance">Legal & Compliance</option>
-                <option value="Projects & Operations">Projects & Operations</option>
-                <option value="General">General</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="new-file-title">File Subject / Title *</label>
-              <input type="text" id="new-file-title" class="text-input" placeholder="e.g. Staff Welfare Committee Minutes & Recommendations" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="new-file-description">Description / Content Summary</label>
-              <textarea id="new-file-description" class="text-input" rows="2" placeholder="Brief summary of records contained in this docket..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-divider">
-            <span>Physical Location in Office</span>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="new-file-cabinet">Cabinet *</label>
-              <select id="new-file-cabinet" class="select-input" required></select>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="new-file-shelf">Shelf / Drawer</label>
-              <input type="text" id="new-file-shelf" class="text-input" placeholder="e.g. Shelf 2, Drawer 1" value="Shelf 1">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="new-file-box">Box / Folder ID</label>
-              <input type="text" id="new-file-box" class="text-input" placeholder="e.g. Box 10">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="new-file-comment">Initial Location Remark</label>
-              <input type="text" id="new-file-comment" class="text-input" placeholder="e.g. Placed in Cabinet A Shelf 1, ready for access.">
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-new-file">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save & Register File</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL 6: LOG CORRESPONDENCE (INWARD / OUTWARD) -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-corr" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title" id="corr-modal-title">Log Mail Correspondence</h3>
-        <button class="modal-close-btn" id="btn-close-corr">&times;</button>
-      </div>
-      <form id="form-corr">
-        <input type="hidden" id="corr-type" value="inward">
-        <div class="modal-body">
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="corr-ref-no">Reference / Dispatch Number *</label>
-              <input type="text" id="corr-ref-no" class="text-input font-mono" placeholder="e.g. IN-2026-0043 or OUT-2026-0021" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="corr-date">Date *</label>
-              <input type="date" id="corr-date" class="text-input" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" id="corr-party-label" for="corr-party">From (Sender) *</label>
-              <input type="text" id="corr-party" class="text-input" placeholder="e.g. Ministry of Works / Crown Ltd" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="corr-subject">Subject / Matter *</label>
-              <input type="text" id="corr-subject" class="text-input" placeholder="e.g. Request for quarterly variance report..." required>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="corr-file-id">Associate with Office File</label>
-              <select id="corr-file-id" class="select-input">
-                <option value="">-- No file selected (General) --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="corr-delivery">Delivery Method</label>
-              <select id="corr-delivery" class="select-input">
-                <option value="Hand Delivery">Hand Delivery</option>
-                <option value="Internal Dispatch">Internal Dispatch</option>
-                <option value="Courier">Courier</option>
-                <option value="Registered Mail">Registered Mail</option>
-                <option value="Email">Email</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="corr-officer">Officer In Charge / Action Officer</label>
-              <input type="text" id="corr-officer" class="text-input" placeholder="e.g. Registry Clerk, Legal Counsel, Audit Head">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="corr-notes">Remarks / Dispatch Notes</label>
-              <textarea id="corr-notes" class="text-input" rows="2" placeholder="e.g. Delivered with 2 annexures, signed for by receptionist..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-corr">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-corr">Save Entry</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL 7: ADD CABINET -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-cabinet" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 class="modal-title">Add Office Storage Cabinet</h3>
-        <button class="modal-close-btn" id="btn-close-cabinet">&times;</button>
-      </div>
-      <form id="form-cabinet">
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="cab-name">Cabinet Name / Code *</label>
-              <input type="text" id="cab-name" class="text-input" placeholder="e.g. Cabinet F - Archives or Metal Locker 2" required>
-            </div>
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label" for="cab-room">Location in Office</label>
-              <input type="text" id="cab-room" class="text-input" placeholder="e.g. Main Registry Office (East Wall)" value="Main Registry Office">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="cab-shelves">Number of Shelves/Drawers</label>
-              <input type="number" id="cab-shelves" class="text-input" value="4" min="1" max="20">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group flex-grow">
-              <label class="form-label" for="cab-desc">Description / Assigned Category</label>
-              <textarea id="cab-desc" class="text-input" rows="2" placeholder="e.g. Dedicated to storing historical annual reports..."></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-cabinet">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Cabinet</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- MODAL 8: IMPORT SPREADSHEET (EXCEL / GOOGLE SHEETS) -->
-  <!-- ============================================== -->
-  <div class="modal-backdrop" id="modal-import" style="display: none;">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-header">
+  <!-- ==================================================== -->
+  <!-- MODAL 4: FILE HISTORY (WHO HAD IT & LOCATION NOTES)  -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-history" style="display: none;">
+    <div class="modal-box modal-lg">
+      <div class="modal-head">
         <div>
-          <h3 class="modal-title">Import Title Deeds / File Records</h3>
-          <p class="text-muted" style="font-size:0.8rem; margin-top:2px;">Import database records directly from an Excel (.xlsx / .csv) spreadsheet or Google Sheets</p>
+          <h2>🕒 File Movement & Location History</h2>
+          <div id="history-file-title" style="font-size:0.85rem; color:#64748b; font-weight:600; margin-top:2px;"></div>
         </div>
-        <button class="modal-close-btn" id="btn-close-import">&times;</button>
+        <button class="modal-x" id="btn-close-history">&times;</button>
       </div>
-
-      <div class="modal-body">
-        <!-- Import Method Selector Tabs -->
-        <div class="dossier-tabs-nav">
-          <button class="d-tab-btn active" id="btn-import-tab-file" data-import-pane="pane-import-file">
-            📁 Upload Excel (.xlsx / .csv)
-          </button>
-          <button class="d-tab-btn" id="btn-import-tab-gsheet" data-import-pane="pane-import-gsheet">
-            🌐 Google Sheets Link
-          </button>
-          <button class="d-tab-btn" id="btn-import-tab-preset" data-import-pane="pane-import-preset">
-            💻 Desktop Spreadsheets
-          </button>
+      <div class="modal-content">
+        <div class="history-list" id="history-list-container">
+          <!-- Dynamically populated history items -->
         </div>
-
-        <!-- Target Destination Configuration (Common to all tabs) -->
-        <div class="form-divider" style="margin-top:0.5rem;">
-          <span>Target Cabinet in Registry Office</span>
-        </div>
-
-        <div class="form-row-2">
-          <div class="form-group">
-            <label class="form-label" for="import-cabinet">Assign to Cabinet</label>
-            <select id="import-cabinet" class="select-input"></select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="import-shelf">Shelf / Drawer</label>
-            <input type="text" id="import-shelf" class="text-input" value="Shelf 1" placeholder="e.g. Shelf 1">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="import-category">Category</label>
-            <select id="import-category" class="select-input">
-              <option value="Title Deeds & Land Records" selected>Title Deeds & Land Records</option>
-              <option value="Administration">Administration</option>
-              <option value="Human Resources">Human Resources</option>
-              <option value="Finance & Procurement">Finance & Procurement</option>
-              <option value="Legal & Compliance">Legal & Compliance</option>
-              <option value="Projects & Operations">Projects & Operations</option>
-              <option value="General">General</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- PANE 1: Upload File -->
-        <div class="import-pane active" id="pane-import-file">
-          <form id="form-upload-file">
-            <div style="border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 2rem; text-align: center; background: #f8fafc; margin-bottom: 1rem;">
-              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
-              <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;">Select your downloaded Title Deeds Excel or CSV file</h4>
-              <p class="text-muted" style="font-size: 0.825rem; margin-bottom: 1rem;">Supports .xlsx, .xls, and .csv files</p>
-              <input type="file" id="spreadsheet-file-input" accept=".xlsx, .xls, .csv" required style="display: none;">
-              <button type="button" class="btn btn-secondary" onclick="document.getElementById('spreadsheet-file-input').click()">
-                Browse Computer...
-              </button>
-              <div id="selected-file-name" style="margin-top: 0.75rem; font-weight: 600; font-size: 0.85rem; color: var(--primary);"></div>
-            </div>
-            <button type="submit" class="btn btn-primary" id="btn-submit-upload" style="width: 100%;">
-              Start File Import
-            </button>
-          </form>
-        </div>
-
-        <!-- PANE 2: Google Sheets URL -->
-        <div class="import-pane" id="pane-import-gsheet" style="display: none;">
-          <form id="form-import-gsheet">
-            <div class="info-callout" style="background:#eff6ff; border-color:#bfdbfe; color:#1e40af; margin-bottom:1rem;">
-              <strong>ℹ️ Google Sheets Sharing Note:</strong> To import directly from Google Sheets via link, ensure the sheet is shared so that <em>"Anyone with the link can view"</em>. Otherwise, download it via <em>File &rarr; Download &rarr; Microsoft Excel (.xlsx)</em> and use the Upload tab.
-            </div>
-            <div class="form-row">
-              <div class="form-group flex-grow">
-                <label class="form-label" for="gsheet-url">Google Sheets Web Link *</label>
-                <input type="url" id="gsheet-url" class="text-input" placeholder="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=0#gid=0" value="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=0#gid=0" required>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary" id="btn-submit-gsheet" style="width: 100%;">
-              Fetch & Import from Google Sheets
-            </button>
-          </form>
-        </div>
-
-        <!-- PANE 3: Desktop Spreadsheets Presets -->
-        <div class="import-pane" id="pane-import-preset" style="display: none;">
-          <p class="text-muted" style="font-size:0.85rem; margin-bottom:1rem;">Found spreadsheet files on your computer that match registry records:</p>
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:1rem; display:flex; align-items:center; justify-content:space-between;">
-              <div>
-                <strong style="color:#0f172a;">DAILY ONE STOP LOG SHEET 2026.xlsx</strong>
-                <div style="font-size:0.785rem; color:#64748b;">Contains 150 Beneficiary / Land records (Zvimba, Seke, Murewa, etc.)</div>
-              </div>
-              <button type="button" class="btn btn-primary btn-sm btn-quick-import" data-path="C:/Users/usr/Desktop/New folder (3)/DAILY ONE STOP LOG SHEET 2026.xlsx">
-                Import 150 Records
-              </button>
-            </div>
-
-            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:1rem; display:flex; align-items:center; justify-content:space-between;">
-              <div>
-                <strong style="color:#0f172a;">Book1.xlsx</strong>
-                <div style="font-size:0.785rem; color:#64748b;">Title deeds records (Gangira, Nyahota, Nyaguse, etc.)</div>
-              </div>
-              <button type="button" class="btn btn-secondary btn-sm btn-quick-import" data-path="C:/Users/usr/Desktop/Book1.xlsx">
-                Import Records
-              </button>
-            </div>
-          </div>
-        </div>
-
       </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-history">Close</button>
+      </div>
+    </div>
+  </div>
 
-      <div class="modal-footer">
+  <!-- ==================================================== -->
+  <!-- MODAL 5: ADD NEW FILE                               -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-add-file" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>+ Add New File to Registry</h2>
+        <button class="modal-x" id="btn-close-add-file">&times;</button>
+      </div>
+      <form id="form-add-file">
+        <div class="modal-content">
+          <div class="form-field">
+            <label for="new-ref">REFERENCE NUMBER *</label>
+            <input type="text" id="new-ref" class="input-text font-mono" placeholder="e.g. REF-2026-001 or Deed / ID Number" required autofocus>
+          </div>
+
+          <div class="form-field">
+            <label for="new-name">NAME (Beneficiary / Owner) *</label>
+            <input type="text" id="new-name" class="input-text" placeholder="e.g. GANGIRA T M" required>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label for="new-farm">FARM NAME</label>
+              <input type="text" id="new-farm" class="input-text" placeholder="e.g. DRYHAM LOT 2">
+            </div>
+            <div class="form-field">
+              <label for="new-district">DISTRICT</label>
+              <input type="text" id="new-district" class="input-text" placeholder="e.g. ZVIMBA">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-field">
+              <label for="new-cabinet">Cabinet in Office</label>
+              <select id="new-cabinet" class="select-box"></select>
+            </div>
+            <div class="form-field">
+              <label for="new-shelf">Shelf</label>
+              <input type="text" id="new-shelf" class="input-text" value="Shelf 1">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="new-comment">Initial Location Remark / Comment</label>
+            <input type="text" id="new-comment" class="input-text" placeholder="e.g. Top shelf in Cabinet A, clean docket.">
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-add-file">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save File</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL 6: IMPORT EXCEL / CSV                         -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-import" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>📥 Import Files from Spreadsheet</h2>
+        <button class="modal-x" id="btn-close-import">&times;</button>
+      </div>
+      <div class="modal-content">
+        <p class="modal-desc">
+          Upload an Excel (.xlsx / .xls) or CSV file with columns: <strong>REFERENCE NUMBER</strong>, <strong>FARM NAME</strong>, <strong>NAME</strong>, <strong>DISTRICT</strong>.
+        </p>
+
+        <div class="form-row-2" style="margin-bottom:1rem;">
+          <div class="form-field">
+            <label for="import-cabinet-select">Target Cabinet</label>
+            <select id="import-cabinet-select" class="select-box"></select>
+          </div>
+          <div class="form-field">
+            <label for="import-shelf-select">Shelf</label>
+            <input type="text" id="import-shelf-select" class="input-text" value="Shelf 1">
+          </div>
+        </div>
+
+        <form id="form-upload-spreadsheet">
+          <div class="upload-dropzone" onclick="document.getElementById('import-file-input').click()">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
+            <strong>Click to select Excel (.xlsx) or CSV file</strong>
+            <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">Drag and drop or browse from computer</p>
+            <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none;" required>
+            <div id="import-file-name" style="margin-top:8px; font-weight:700; color:#2563eb; font-size:0.85rem;"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-start-import" style="width:100%; margin-top:1rem;">
+            Upload & Import Records
+          </button>
+        </form>
+
+        <div style="margin: 1.5rem 0 1rem; border-top:1px solid #e2e8f0; text-align:center; position:relative;">
+          <span style="background:#fff; padding:0 10px; font-size:0.75rem; color:#94a3b8; text-transform:uppercase; position:relative; top:-9px;">OR GOOGLE SHEETS LINK</span>
+        </div>
+
+        <form id="form-import-gsheet">
+          <div class="form-field">
+            <label for="gsheet-link">Google Sheets Web Link</label>
+            <input type="url" id="gsheet-link" class="input-text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=0#gid=0">
+            <span style="font-size:0.75rem; color:#64748b; margin-top:3px; display:block;">Ensure Google Sheet sharing is set to "Anyone with the link can view".</span>
+          </div>
+          <button type="submit" class="btn btn-secondary" id="btn-fetch-gsheet" style="width:100%; margin-top:0.5rem;">
+            Import from Google Sheets Link
+          </button>
+        </form>
+      </div>
+      <div class="modal-foot">
         <button type="button" class="btn btn-secondary" id="btn-cancel-import">Close</button>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification Container -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- Print Slip Area (Only visible during print) -->
-  <div id="print-slip-area" class="print-only"></div>
+  <div id="toast-container" class="toast-wrap"></div>
 
   <!-- Client Script -->
   <script src="js/app.js"></script>
