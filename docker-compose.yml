@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: registry-tracker
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATA_DIR=/app/data
+    volumes:
+      - tracker-storage:/app/data
+
+volumes:
+  tracker-storage:

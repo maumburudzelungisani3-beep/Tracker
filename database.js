@@ -2,12 +2,25 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const dbDir = path.join(__dirname, 'data');
+const dbDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
-const dbPath = path.join(dbDir, 'registry.db');
+const dbPath = process.env.DB_PATH || path.join(dbDir, 'registry.db');
+
+// If running with a mounted persistent volume where the DB does not exist yet,
+// automatically seed from the repository's data/registry.db if available
+const seedDbPath = path.join(__dirname, 'data', 'registry.db');
+if (!fs.existsSync(dbPath) && fs.existsSync(seedDbPath) && path.resolve(dbPath) !== path.resolve(seedDbPath)) {
+  try {
+    fs.copyFileSync(seedDbPath, dbPath);
+    console.log(`Initialized database from seed at ${dbPath}`);
+  } catch (err) {
+    console.warn(`Could not copy initial seed database: ${err.message}`);
+  }
+}
+
 const db = new Database(dbPath);
 
 // Enable WAL mode for high performance

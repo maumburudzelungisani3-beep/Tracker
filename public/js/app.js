@@ -246,6 +246,8 @@ async function loadFiles() {
 // ----------------------------------------------------
 // RENDER FILES TABLE (ONLY 4 DETAILS + LOCATION & CUSTODY)
 // ----------------------------------------------------
+let displayLimit = 100;
+
 function renderFilesTable() {
   const tbody = document.getElementById('files-table-body');
   const emptyState = document.getElementById('table-empty-state');
@@ -253,15 +255,26 @@ function renderFilesTable() {
 
   tbody.innerHTML = '';
 
-  countSummary.textContent = `Showing ${state.files.length} file record${state.files.length === 1 ? '' : 's'}`;
-
   if (state.files.length === 0) {
+    countSummary.textContent = 'Showing 0 file records';
     emptyState.style.display = 'block';
     return;
   }
   emptyState.style.display = 'none';
 
-  state.files.forEach((file) => {
+  const isFiltered = state.searchQuery || state.activeFilter !== 'all' || state.activeCabinet !== 'all' || state.activeDistrict !== 'all';
+  const effectiveLimit = isFiltered ? Math.min(state.files.length, 300) : displayLimit;
+  const visibleFiles = state.files.slice(0, effectiveLimit);
+
+  if (state.files.length > effectiveLimit) {
+    countSummary.textContent = `Showing ${visibleFiles.length} of ${state.files.length.toLocaleString()} records — search above for instant instant results`;
+  } else {
+    countSummary.textContent = `Showing ${state.files.length.toLocaleString()} file record${state.files.length === 1 ? '' : 's'}`;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  visibleFiles.forEach((file) => {
     const tr = document.createElement('tr');
     if (file.status === 'given_out') {
       tr.classList.add('is-given');
@@ -345,8 +358,27 @@ function renderFilesTable() {
       </td>
     `;
 
-    tbody.appendChild(tr);
+    fragment.appendChild(tr);
   });
+
+  tbody.appendChild(fragment);
+
+  // If there are more files, show a "Load More" row
+  if (state.files.length > visibleFiles.length) {
+    const moreTr = document.createElement('tr');
+    moreTr.innerHTML = `
+      <td colspan="6" style="text-align:center; padding:1.2rem; background:#f8fafc;">
+        <button id="btn-load-more" class="btn btn-secondary" style="font-size:0.85rem; padding:0.5rem 1.5rem;">
+          ⬇️ Show More Records (${visibleFiles.length} of ${state.files.length.toLocaleString()})
+        </button>
+      </td>
+    `;
+    tbody.appendChild(moreTr);
+    document.getElementById('btn-load-more')?.addEventListener('click', () => {
+      displayLimit += 150;
+      renderFilesTable();
+    });
+  }
 
   // Attach button events
   tbody.querySelectorAll('.btn-give').forEach(btn => {
@@ -669,10 +701,12 @@ async function handleImportGSheetSubmit(e) {
       await loadFiles();
     } else {
       showToast(data.error || 'Google Sheet import failed', 'error');
+      alert('⚠️ Google Sheet Access Blocked:\n\n' + data.error + '\n\nEasiest Solution: Open your Google Sheet, click File > Download > Microsoft Excel (.xlsx), then use the "Upload & Import Records" option in this modal!');
     }
   } catch (err) {
     console.error('Google sheet import error:', err);
     showToast('Error fetching sheet', 'error');
+    alert('Could not connect to Google Sheet. Please check your internet connection or download the file as Excel (.xlsx) and upload it directly.');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Import from Google Sheets Link';

@@ -332,7 +332,7 @@ function importSimpleRows(rows, targetCabinet = 'Cabinet A', targetShelf = 'Shel
 
   const insertHist = db.prepare(`
     INSERT INTO file_history (file_id, action_type, cabinet, shelf, comment)
-    VALUES (?, 'created', ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?)
   `);
 
   const checkStmt = db.prepare('SELECT id FROM files WHERE reference_no = ?');
@@ -342,20 +342,70 @@ function importSimpleRows(rows, targetCabinet = 'Cabinet A', targetShelf = 'Shel
       const row = rows[i];
       if (!row || typeof row !== 'object') continue;
 
-      // Extract REFERENCE NUMBER
-      let ref = row['REFERENCE NUMBER'] || row['Reference Number'] || row['Ref Number'] || row['ID Number'] || row['IDS'] || row['REF'] || row['NO'];
-      
-      // Extract NAME
-      let name = row['NAME'] || row['Name'] || row['BENEFICIARY NAME(S)'] || row['Beneficiary'] || row['Surname'];
-      if (!name && row['Surname']) {
-        name = `${row['Surname']} ${row['Initials'] || ''}`.trim();
+      // Normalize keys to lowercase trimmed
+      const norm = {};
+      for (const [k, v] of Object.entries(row)) {
+        if (k && v !== undefined && v !== null) {
+          norm[k.trim().toLowerCase()] = typeof v === 'string' ? v.trim() : String(v);
+        }
       }
 
-      // Extract FARM NAME
-      let farm = row['FARM NAME'] || row['Farm Name'] || row['Farm'] || row['Property'] || '';
+      // 1. Reference Number
+      let ref = norm['reference number'] || norm['reference no'] || norm['reference_no'] || 
+                norm['ref number'] || norm['ref no'] || norm['id number'] || norm['id_number'] || 
+                norm['ids'] || norm['id'] || norm['ref'] || norm['reference'] || norm['deed number'] || 
+                norm['title deed'] || norm['no'] || norm['no.'] || '';
 
-      // Extract DISTRICT
-      let district = row['DISTRICT'] || row['District'] || '';
+      if (!ref) {
+        for (const [k, v] of Object.entries(norm)) {
+          if (k.includes('ref') || k.includes('deed') || k === 'id') {
+            ref = v;
+            break;
+          }
+        }
+      }
+
+      // 2. Name / Beneficiary
+      let name = norm['name'] || norm['beneficiary name(s)'] || norm['beneficiary name'] || 
+                 norm['beneficiary'] || norm['owner'] || norm['farmer'] || norm['applicant'] || 
+                 norm['full name'] || '';
+
+      if (!name && norm['surname']) {
+        name = `${norm['surname']} ${norm['initials'] || norm['first name'] || ''}`.trim();
+      }
+
+      if (!name) {
+        for (const [k, v] of Object.entries(norm)) {
+          if ((k.includes('beneficiary') || k.includes('name')) && !k.includes('farm')) {
+            name = v;
+            break;
+          }
+        }
+      }
+
+      // 3. Farm Name
+      let farm = norm['farm name'] || norm['farm_name'] || norm['farm'] || 
+                 norm['property'] || norm['scheme'] || norm['holding'] || norm['lot'] || '';
+
+      if (!farm) {
+        for (const [k, v] of Object.entries(norm)) {
+          if (k.includes('farm') || k.includes('property')) {
+            farm = v;
+            break;
+          }
+        }
+      }
+
+      // 4. District
+      let district = norm['district'] || norm['province'] || '';
+      if (!district) {
+        for (const [k, v] of Object.entries(norm)) {
+          if (k.includes('district') || k.includes('province')) {
+            district = v;
+            break;
+          }
+        }
+      }
 
       if (!name && !farm && !ref) continue;
 
@@ -374,7 +424,7 @@ function importSimpleRows(rows, targetCabinet = 'Cabinet A', targetShelf = 'Shel
 
       const finalName = name ? String(name).trim() : 'Unknown Name';
       const finalFarm = farm ? String(farm).trim() : '';
-      const finalDistrict = district ? String(district).trim() : '';
+      const finalDistrict = district ? String(district).trim().toUpperCase() : '';
       const comment = `Stored in ${targetCabinet}, ${targetShelf}`;
 
       const res = insertStmt.run(finalRef, finalName, finalFarm, finalDistrict, targetCabinet, targetShelf, comment);
@@ -434,13 +484,21 @@ app.post('/api/import/googlesheet', async (req, res) => {
     if (!match) return res.status(400).json({ success: false, error: 'Invalid Google Sheets URL' });
 
     const sheetId = match[1];
-    const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+    let gid = '0';
+    const gidMatch = url.match(/gid=([0-9]+)/);
+    if (gidMatch) gid = gidMatch[1];
+    const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
 
-    const response = await fetch(exportUrl);
-    if (response.status === 401 || response.status === 403) {
+    const response = await fetch(exportUrl, { redirect: 'follow' });
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      response.url.includes('accounts.google.com') ||
+      response.url.includes('ServiceLogin')
+    ) {
       return res.status(403).json({
         success: false,
-        error: 'Google Sheet is private (401 Unauthorized). Please change sharing to "Anyone with the link can view", or download it as Excel (.xlsx) and upload it directly.'
+        error: 'Google Sheet is private/restricted. Please either change sharing to "Anyone with the link can view", or download it: File > Download > Microsoft Excel (.xlsx) and upload it directly.'
       });
     }
 
@@ -449,6 +507,13 @@ app.post('/api/import/googlesheet', async (req, res) => {
     }
 
     const csvText = await response.text();
+    if (csvText.includes('<!DOCTYPE html>') || csvText.includes('<html')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Google Sheet redirected to login. Please download the sheet as Excel (.xlsx) and use "Upload File" above.'
+      });
+    }
+
     const workbook = xlsx.read(csvText, { type: 'string' });
     const rows = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
@@ -515,6 +580,7 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Registry Office File Management Server running at http://localhost:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`Registry Office File Management Server running at http://${HOST}:${PORT}`);
 });

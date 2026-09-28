@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: registry-tracker
+    runtime: docker
+    region: oregon
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: tracker-data
+      mountPath: /var/data
+      sizeGB: 1

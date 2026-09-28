@@ -376,7 +376,11 @@
           <div class="form-field">
             <label for="gsheet-link">Google Sheets Web Link</label>
             <input type="url" id="gsheet-link" class="input-text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=0#gid=0">
-            <span style="font-size:0.75rem; color:#64748b; margin-top:3px; display:block;">Ensure Google Sheet sharing is set to "Anyone with the link can view".</span>
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:0.6rem 0.8rem; margin-top:0.5rem; font-size:0.8rem; color:#1e40af;">
+              <strong>ℹ️ Note on Google Sheets Permissions:</strong><br>
+              If your sheet is set to "Restricted", Google blocks automatic import (HTTP 401).<br>
+              <strong>Quick Fix:</strong> In Google Sheets, click <strong>File ➔ Download ➔ Microsoft Excel (.xlsx)</strong>, then use the <strong>Upload File</strong> box above! Or click <strong>Share ➔ Anyone with link can view</strong>.
+            </div>
           </div>
           <button type="submit" class="btn btn-secondary" id="btn-fetch-gsheet" style="width:100%; margin-top:0.5rem;">
             Import from Google Sheets Link
