@@ -24,6 +24,9 @@
       </div>
 
       <div class="nav-actions">
+        <button class="btn btn-secondary" id="btn-open-settings" title="Connect to Render backend or change server URL">
+          ⚙️ Server
+        </button>
         <button class="btn btn-secondary" id="btn-open-import" title="Import from Excel or CSV spreadsheet">
           📥 Import Excel / CSV
         </button>
@@ -390,6 +393,36 @@
       <div class="modal-foot">
         <button type="button" class="btn btn-secondary" id="btn-cancel-import">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL 7: SERVER & CLOUD CONNECTION (RENDER / VERCEL) -->
+  <!-- ==================================================== -->
+  <div class="modal-overlay" id="modal-settings" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>⚙️ Server & Cloud Connection</h2>
+        <button class="modal-x" id="btn-close-settings">&times;</button>
+      </div>
+      <form id="form-settings">
+        <div class="modal-content">
+          <p class="modal-desc">
+            Connect your <strong>Vercel frontend</strong> to your <strong>Render backend</strong>. If running locally or as a single service on Render, leave this blank.
+          </p>
+          <div class="form-field">
+            <label for="settings-api-url">Render Backend URL</label>
+            <input type="url" id="settings-api-url" class="input-text" placeholder="https://your-tracker.onrender.com">
+            <span style="font-size:0.75rem; color:#64748b; margin-top:4px; display:block;">Example: <code>https://registry-tracker.onrender.com</code></span>
+          </div>
+          <div id="settings-status-msg" style="display:none; padding:0.6rem 0.8rem; border-radius:6px; font-size:0.85rem; margin-top:0.75rem;"></div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-settings">Cancel</button>
+          <button type="button" class="btn btn-secondary" id="btn-test-connection">Test Connection</button>
+          <button type="submit" class="btn btn-primary">Save & Connect</button>
+        </div>
+      </form>
     </div>
   </div>
 

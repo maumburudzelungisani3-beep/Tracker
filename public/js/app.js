@@ -3,6 +3,24 @@
  * Displays ONLY: REFERENCE NUMBER, NAME, FARM NAME, DISTRICT, LOCATION & WHO WAS GIVEN THE FILE
  */
 
+// Dynamic API base URL configuration:
+// Supports local running, Render full-stack, Vercel proxy rewrite, or direct Render backend URL
+let apiBaseUrl = (window.API_BASE_URL || localStorage.getItem('TRACKER_API_BASE') || '').replace(/\/+$/, '');
+
+function apiUrl(endpoint) {
+  if (!endpoint.startsWith('/')) endpoint = '/' + endpoint;
+  return apiBaseUrl ? `${apiBaseUrl}${endpoint}` : endpoint;
+}
+
+function setApiBaseUrl(url) {
+  apiBaseUrl = (url || '').trim().replace(/\/+$/, '');
+  if (apiBaseUrl) {
+    localStorage.setItem('TRACKER_API_BASE', apiBaseUrl);
+  } else {
+    localStorage.removeItem('TRACKER_API_BASE');
+  }
+}
+
 const state = {
   files: [],
   cabinets: ['Cabinet A', 'Cabinet B', 'Cabinet C', 'Cabinet D', 'Cabinet E'],
@@ -85,8 +103,66 @@ function setupEventListeners() {
 
   // Export CSV
   document.getElementById('btn-export-csv').addEventListener('click', () => {
-    window.location.href = '/api/export/csv';
+    window.location.href = apiUrl('/api/export/csv');
   });
+
+  // Server Settings Modal (for connecting Vercel frontend to Render backend)
+  const btnSettings = document.getElementById('btn-open-settings');
+  if (btnSettings) {
+    btnSettings.addEventListener('click', () => {
+      const input = document.getElementById('settings-api-url');
+      if (input) input.value = apiBaseUrl;
+      const statusMsg = document.getElementById('settings-status-msg');
+      if (statusMsg) statusMsg.style.display = 'none';
+      openModal('modal-settings');
+    });
+  }
+
+  const formSettings = document.getElementById('form-settings');
+  if (formSettings) {
+    formSettings.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const val = document.getElementById('settings-api-url').value.trim();
+      setApiBaseUrl(val);
+      closeModal('modal-settings');
+      showToast('Server URL saved! Connecting...');
+      await loadStats();
+      await loadFiles();
+    });
+  }
+
+  const btnTestConn = document.getElementById('btn-test-connection');
+  if (btnTestConn) {
+    btnTestConn.addEventListener('click', async () => {
+      const val = document.getElementById('settings-api-url').value.trim().replace(/\/+$/, '');
+      const testUrl = val ? `${val}/api/stats` : '/api/stats';
+      const statusMsg = document.getElementById('settings-status-msg');
+      statusMsg.style.display = 'block';
+      statusMsg.style.background = '#f1f5f9';
+      statusMsg.style.color = '#334155';
+      statusMsg.textContent = 'Testing connection to ' + testUrl + '...';
+      try {
+        const res = await fetch(testUrl);
+        const data = await res.json();
+        if (data && data.success) {
+          statusMsg.style.background = '#dcfce7';
+          statusMsg.style.color = '#15803d';
+          statusMsg.textContent = `Connected! Found ${data.stats.total.toLocaleString()} total files in database.`;
+        } else {
+          statusMsg.style.background = '#fee2e2';
+          statusMsg.style.color = '#b91c1c';
+          statusMsg.textContent = 'Server responded with error: ' + (data.error || 'Unknown error');
+        }
+      } catch (err) {
+        statusMsg.style.background = '#fee2e2';
+        statusMsg.style.color = '#b91c1c';
+        statusMsg.textContent = 'Connection failed: ' + err.message;
+      }
+    });
+  }
+
+  document.getElementById('btn-close-settings')?.addEventListener('click', () => closeModal('modal-settings'));
+  document.getElementById('btn-cancel-settings')?.addEventListener('click', () => closeModal('modal-settings'));
 
   // Modal: Add File
   document.getElementById('btn-open-add-file').addEventListener('click', () => {
@@ -157,7 +233,7 @@ function setActiveFilter(filter) {
 // ----------------------------------------------------
 async function loadStats() {
   try {
-    const res = await fetch('/api/stats');
+    const res = await fetch(apiUrl('/api/stats'));
     const data = await res.json();
     if (data.success) {
       document.getElementById('stat-total').textContent = data.stats.total;
@@ -221,7 +297,7 @@ function populateCabinetDropdown(selectId) {
 
 async function loadFiles() {
   try {
-    let url = `/api/files?status=${encodeURIComponent(state.activeFilter)}`;
+    let url = apiUrl(`/api/files?status=${encodeURIComponent(state.activeFilter)}`);
     if (state.searchQuery) {
       url += `&q=${encodeURIComponent(state.searchQuery)}`;
     }
@@ -428,7 +504,7 @@ async function handleGiveFileSubmit(e) {
   if (!given_to) return;
 
   try {
-    const res = await fetch(`/api/files/${fileId}/give`, {
+    const res = await fetch(apiUrl(`/api/files/${fileId}/give`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ given_to, date_given, comment })
@@ -476,7 +552,7 @@ async function handleReturnFileSubmit(e) {
   const comment = document.getElementById('return-comment').value.trim();
 
   try {
-    const res = await fetch(`/api/files/${fileId}/return`, {
+    const res = await fetch(apiUrl(`/api/files/${fileId}/return`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cabinet, shelf, comment })
@@ -527,7 +603,7 @@ async function handleAddCommentSubmit(e) {
   if (!comment) return;
 
   try {
-    const res = await fetch(`/api/files/${fileId}/comment`, {
+    const res = await fetch(apiUrl(`/api/files/${fileId}/comment`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ comment })
@@ -551,7 +627,7 @@ async function handleAddCommentSubmit(e) {
 // ----------------------------------------------------
 async function openHistoryModal(fileId) {
   try {
-    const res = await fetch(`/api/files/${fileId}`);
+    const res = await fetch(apiUrl(`/api/files/${fileId}`));
     const data = await res.json();
     if (!data.success) {
       showToast('Could not load history', 'error');
@@ -608,7 +684,7 @@ async function handleAddFileSubmit(e) {
   const location_comment = document.getElementById('new-comment').value.trim();
 
   try {
-    const res = await fetch('/api/files', {
+    const res = await fetch(apiUrl('/api/files'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reference_no, name, farm_name, district, cabinet, shelf, location_comment })
@@ -653,7 +729,7 @@ async function handleImportUploadSubmit(e) {
   btn.textContent = 'Importing records...';
 
   try {
-    const res = await fetch('/api/import/file', {
+    const res = await fetch(apiUrl('/api/import/file'), {
       method: 'POST',
       body: formData
     });
@@ -688,7 +764,7 @@ async function handleImportGSheetSubmit(e) {
   btn.textContent = 'Connecting to Google Sheets...';
 
   try {
-    const res = await fetch('/api/import/googlesheet', {
+    const res = await fetch(apiUrl('/api/import/googlesheet'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, cabinet, shelf })
