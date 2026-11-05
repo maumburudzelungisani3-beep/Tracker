@@ -9,3 +9,7 @@ services:
         value: 3000
       - key: DATA_DIR
         value: /app/data
+      - key: GOOGLE_SHEET_URL
+        value: https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=1844098827#gid=1844098827
+      - key: SYNC_INTERVAL_SECONDS
+        value: "30"
