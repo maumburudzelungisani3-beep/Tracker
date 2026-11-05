@@ -3,4 +3,10 @@ node_modules/
 *.log
 data/*.db-wal
 data/*.db-shm
-
+data/*.db.bak
+data/*.before-mirror.db
+data/tracker.pids
+data/online_url.txt
+config.yml
+bin/
+cloudflared*.exe

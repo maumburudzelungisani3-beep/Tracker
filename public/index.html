@@ -24,8 +24,12 @@
       </div>
 
       <div class="nav-actions">
+        <span id="sync-status" style="font-size:0.75rem; color:#94a3b8; white-space:nowrap;">⏳ Auto-sync starting...</span>
         <button class="btn btn-secondary" id="btn-open-settings" title="Connect to Render backend or change server URL">
           ⚙️ Server
+        </button>
+        <button class="btn btn-secondary" id="btn-sync-online" title="Sync files directly from the online spreadsheet">
+          🔄 Sync Online Sheet
         </button>
         <button class="btn btn-secondary" id="btn-open-import" title="Import from Excel or CSV spreadsheet">
           📥 Import Excel / CSV
@@ -378,7 +382,7 @@
         <form id="form-import-gsheet">
           <div class="form-field">
             <label for="gsheet-link">Google Sheets Web Link</label>
-            <input type="url" id="gsheet-link" class="input-text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=0#gid=0">
+            <input type="url" id="gsheet-link" class="input-text" placeholder="https://docs.google.com/spreadsheets/d/..." value="https://docs.google.com/spreadsheets/d/13QbRWQVWniHiy5vFuBtxxCPdoRTxmgz9p_GgIgE4qT4/edit?gid=1844098827#gid=1844098827">
             <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:0.6rem 0.8rem; margin-top:0.5rem; font-size:0.8rem; color:#1e40af;">
               <strong>ℹ️ Note on Google Sheets Permissions:</strong><br>
               If your sheet is set to "Restricted", Google blocks automatic import (HTTP 401).<br>

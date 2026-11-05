@@ -39,6 +39,55 @@ async function initApp() {
   setupEventListeners();
   await loadStats();
   await loadFiles();
+  startAutoRefresh();
+}
+
+// ----------------------------------------------------
+// AUTO-REFRESH: server syncs the Google Sheet in the background;
+// the page checks every 30s and reloads when new data arrived.
+// ----------------------------------------------------
+let lastSeenChangeAt = null;
+
+async function checkSyncStatus() {
+  try {
+    const res = await fetch(apiUrl('/api/sync/status'));
+    const data = await res.json();
+    if (!data.success) return;
+    const s = data.sync;
+
+    const badge = document.getElementById('sync-status');
+    if (badge) {
+      if (s.lastError) {
+        badge.textContent = '⚠️ Sheet sync error';
+        badge.title = s.lastError;
+        badge.style.color = '#fca5a5';
+      } else if (s.lastSyncAt) {
+        const t = new Date(s.lastSyncAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        badge.textContent = `🟢 Live Sheet · ${t}`;
+        badge.title = `Google Sheet is auto-checked every ${s.intervalSeconds || 30}s. Click Refresh to sync instantly.`;
+        badge.style.color = '#86efac';
+      } else {
+        badge.textContent = '⏳ Auto-sync starting...';
+      }
+    }
+
+    if (lastSeenChangeAt === null) {
+      lastSeenChangeAt = s.lastChangeAt || '';
+    } else if (s.lastChangeAt && s.lastChangeAt !== lastSeenChangeAt) {
+      lastSeenChangeAt = s.lastChangeAt;
+      const r = s.lastResult || {};
+      showToast(`Google Sheet updated: ${r.created || 0} new, ${r.updated || 0} changed, ${r.removed || 0} removed`);
+      await loadStats();
+      await loadFiles();
+    }
+  } catch (err) {
+    // Server unreachable; try again on the next tick
+  }
+}
+
+function startAutoRefresh() {
+  checkSyncStatus();
+  setInterval(checkSyncStatus, 8000);
 }
 
 function setupEventListeners() {
@@ -95,16 +144,56 @@ function setupEventListeners() {
     loadFiles();
   });
 
-  document.getElementById('btn-refresh').addEventListener('click', () => {
-    loadStats();
-    loadFiles();
-    showToast('Records reloaded');
+  // Common function for instant 1-click live sync from Google Sheet
+  const triggerLiveSync = async (btn) => {
+    const origText = btn ? btn.textContent : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '🔄 Syncing...';
+    }
+    showToast('Checking Google Sheet for new, edited, or deleted rows...', 'info');
+
+    try {
+      const res = await fetch(apiUrl('/api/sync/now'), { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`✅ ${data.message}`);
+        lastSeenChangeAt = null;
+        await loadStats();
+        await loadFiles();
+        checkSyncStatus();
+      } else {
+        showToast(data.error || 'Sync failed', 'error');
+      }
+    } catch (err) {
+      console.error('Online sync error:', err);
+      showToast('Could not reach server to sync. Reloading local records...', 'info');
+      await loadStats();
+      await loadFiles();
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = origText;
+      }
+    }
+  };
+
+  document.getElementById('btn-refresh').addEventListener('click', (e) => {
+    triggerLiveSync(e.currentTarget);
   });
 
   // Export CSV
   document.getElementById('btn-export-csv').addEventListener('click', () => {
     window.location.href = apiUrl('/api/export/csv');
   });
+
+  // 1-Click Sync with Online Google Sheet / Excel
+  const btnSyncOnline = document.getElementById('btn-sync-online');
+  if (btnSyncOnline) {
+    btnSyncOnline.addEventListener('click', () => {
+      triggerLiveSync(btnSyncOnline);
+    });
+  }
 
   // Server Settings Modal (for connecting Vercel frontend to Render backend)
   const btnSettings = document.getElementById('btn-open-settings');
@@ -236,9 +325,9 @@ async function loadStats() {
     const res = await fetch(apiUrl('/api/stats'));
     const data = await res.json();
     if (data.success) {
-      document.getElementById('stat-total').textContent = data.stats.total;
-      document.getElementById('stat-in-office').textContent = data.stats.inOffice;
-      document.getElementById('stat-given-out').textContent = data.stats.givenOut;
+      document.getElementById('stat-total').textContent = Number(data.stats.total).toLocaleString();
+      document.getElementById('stat-in-office').textContent = Number(data.stats.inOffice).toLocaleString();
+      document.getElementById('stat-given-out').textContent = Number(data.stats.givenOut).toLocaleString();
 
       if (data.stats.cabinets && data.stats.cabinets.length) {
         state.cabinets = data.stats.cabinets;
@@ -295,7 +384,16 @@ function populateCabinetDropdown(selectId) {
   });
 }
 
-async function loadFiles() {
+let currentFetchSeq = 0;
+let lastQuerySignature = '';
+async function loadFiles(resetLimit = false) {
+  const seq = ++currentFetchSeq;
+  const querySignature = `${state.searchQuery}|${state.activeFilter}|${state.activeCabinet}|${state.activeDistrict}`;
+  if (querySignature !== lastQuerySignature || resetLimit) {
+    displayLimit = 150;
+    lastQuerySignature = querySignature;
+  }
+
   try {
     let url = apiUrl(`/api/files?status=${encodeURIComponent(state.activeFilter)}`);
     if (state.searchQuery) {
@@ -310,11 +408,13 @@ async function loadFiles() {
 
     const res = await fetch(url);
     const data = await res.json();
+    if (seq !== currentFetchSeq) return;
     if (data.success) {
       state.files = data.files;
       renderFilesTable();
     }
   } catch (err) {
+    if (seq !== currentFetchSeq) return;
     console.error('Failed to load files:', err);
   }
 }
@@ -322,7 +422,7 @@ async function loadFiles() {
 // ----------------------------------------------------
 // RENDER FILES TABLE (ONLY 4 DETAILS + LOCATION & CUSTODY)
 // ----------------------------------------------------
-let displayLimit = 100;
+let displayLimit = 150;
 
 function renderFilesTable() {
   const tbody = document.getElementById('files-table-body');
@@ -338,12 +438,10 @@ function renderFilesTable() {
   }
   emptyState.style.display = 'none';
 
-  const isFiltered = state.searchQuery || state.activeFilter !== 'all' || state.activeCabinet !== 'all' || state.activeDistrict !== 'all';
-  const effectiveLimit = isFiltered ? Math.min(state.files.length, 300) : displayLimit;
-  const visibleFiles = state.files.slice(0, effectiveLimit);
+  const visibleFiles = state.files.slice(0, displayLimit);
 
-  if (state.files.length > effectiveLimit) {
-    countSummary.textContent = `Showing ${visibleFiles.length} of ${state.files.length.toLocaleString()} records — search above for instant instant results`;
+  if (state.files.length > displayLimit) {
+    countSummary.textContent = `Showing ${visibleFiles.length.toLocaleString()} of ${state.files.length.toLocaleString()} file records`;
   } else {
     countSummary.textContent = `Showing ${state.files.length.toLocaleString()} file record${state.files.length === 1 ? '' : 's'}`;
   }
@@ -439,19 +537,26 @@ function renderFilesTable() {
 
   tbody.appendChild(fragment);
 
-  // If there are more files, show a "Load More" row
+  // If there are more files, show "Load More" and "Show All" buttons
   if (state.files.length > visibleFiles.length) {
     const moreTr = document.createElement('tr');
     moreTr.innerHTML = `
       <td colspan="6" style="text-align:center; padding:1.2rem; background:#f8fafc;">
-        <button id="btn-load-more" class="btn btn-secondary" style="font-size:0.85rem; padding:0.5rem 1.5rem;">
-          ⬇️ Show More Records (${visibleFiles.length} of ${state.files.length.toLocaleString()})
+        <button id="btn-load-more" class="btn btn-secondary" style="font-size:0.85rem; padding:0.5rem 1.2rem; margin-right: 0.6rem;">
+          ⬇️ Show More (+150 records)
+        </button>
+        <button id="btn-load-all" class="btn btn-secondary" style="font-size:0.85rem; padding:0.5rem 1.2rem;">
+          📑 Show All (${state.files.length.toLocaleString()} records)
         </button>
       </td>
     `;
     tbody.appendChild(moreTr);
     document.getElementById('btn-load-more')?.addEventListener('click', () => {
       displayLimit += 150;
+      renderFilesTable();
+    });
+    document.getElementById('btn-load-all')?.addEventListener('click', () => {
+      displayLimit = state.files.length;
       renderFilesTable();
     });
   }

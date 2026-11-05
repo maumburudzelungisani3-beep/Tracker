@@ -1,100 +1,65 @@
-# Deployment Guide: Render + Vercel Setup
+# 🚀 Free Deployment Guide: Registry Office File Tracker
 
-This guide walks you through deploying the **Registry Office File Tracker** using **Render** and **Vercel**.
-
----
-
-## 🏗️ Architecture: How Render + Vercel Work Together
-
-| Component | Platform | Why |
-| :--- | :--- | :--- |
-| **Backend & SQLite Database** | **Render** | Render provides continuous Node.js runtime and **persistent disk storage** for your SQLite database (`registry.db`), keeping all records safe across restarts. |
-| **Frontend UI (Static SPA)** | **Vercel** | Vercel provides instant global CDN delivery, automatic SSL, and fast static loading for the HTML/CSS/JS interface. |
-
-> 💡 **Tip:** Render can also serve both the frontend and backend together as a single full-stack service if you prefer to deploy in one place!
+This guide explains how to use and deploy the **Registry Office File Tracker** **100% FREE** without paying any subscription fees or needing a credit card.
 
 ---
 
-## Step 1: Push Project to GitHub
+## ⚡ Method 1: Instant Free Online Access via Cloudflare Tunnel (Recommended)
 
-If you haven't pushed the latest changes to GitHub yet:
+You already have `cloudflared-windows-amd64.exe` downloaded in the tracker folder. This method gives you a **free, encrypted public HTTPS web address** that works anywhere in the world on smartphones, tablets, or other computers.
 
-1. Create a repository on [GitHub](https://github.com/new) (e.g. `registry-tracker`).
-2. Run these commands in your project terminal:
+### 🌟 Why this is the best free option:
+- **$0.00 Cost Forever:** No credit card, no billing, no hidden fees.
+- **100% Permanent Data:** All 4,134 records and newly registered files are stored directly on your computer's `data/registry.db`. No cloud storage limits or accidental data resets.
+- **Secure Encrypted Link:** Uses Cloudflare's global SSL infrastructure (`https://xxxx.trycloudflare.com`).
+
+### How to use:
+1. Double-click **`Launch-Online-Tracker.bat`** in this folder.
+2. The launcher will automatically:
+   - Start the database server (if not already running).
+   - Establish the free Cloudflare secure tunnel.
+   - Automatically copy the public HTTPS link to your clipboard.
+   - Open your web browser to the public link.
+3. Simply paste (**Ctrl+V**) and share the link with colleagues or open it on your phone!
+4. When finished, close the window or press `Ctrl+C` to stop sharing.
+
+> 💡 **Tip:** Double-click `Create-Desktop-Shortcut.bat` to put a **"Registry File Tracker (Online Free)"** icon right on your Desktop for 1-click access!
+
+---
+
+## ☁️ Method 2: Render Free Web Service (24/7 Cloud Hosting)
+
+If you prefer to host the app in the cloud so your computer doesn't need to stay on:
+
+1. Push this project to your GitHub repository:
    ```bash
+   git add .
+   git commit -m "Configure 100% free deployment"
    git branch -M main
    git remote add origin https://github.com/YOUR_USERNAME/registry-tracker.git
    git push -u origin main
    ```
-
----
-
-## Step 2: Deploy Backend to Render
-
-1. Go to your [Render Dashboard](https://dashboard.render.com/).
-2. Click **New +** ➔ **Blueprint**.
-3. Connect your GitHub repository `registry-tracker`.
-4. Render detects [render.yaml](render.yaml) automatically:
-   - Sets runtime to **Docker**
-   - Configures the persistent disk (`1 GB` mounted at `/var/data`)
-   - Sets `DATA_DIR=/var/data`
-   - Automatically seeds your existing 4,134 records into the disk on first launch!
+2. Go to [dashboard.render.com](https://dashboard.render.com/) and click **New +** ➔ **Blueprint**.
+3. Select your repository.
+4. Render will read `render.yaml` with the configured **Free plan** (`plan: free`, zero dollars).
 5. Click **Apply**.
-6. When deployment finishes, copy your Render web service URL:
+6. When deployment finishes, you get a live URL:
    ```
    https://registry-tracker-xxxx.onrender.com
    ```
 
----
-
-## Step 3: Deploy Frontend to Vercel
-
-1. Go to your [Vercel Dashboard](https://vercel.com/new).
-2. Click **Add New...** ➔ **Project**.
-3. Import your GitHub repository `registry-tracker`.
-4. Vercel automatically detects [vercel.json](vercel.json):
-   - **Framework Preset:** Other
-   - **Root Directory:** `./`
-   - **Output Directory:** `public` (set automatically by vercel.json)
-5. Click **Deploy**.
-6. When deployment is complete, Vercel gives you your live URL:
-   ```
-   https://registry-tracker-xxxx.vercel.app
-   ```
+> ⚠️ **Note about Render Free Tier:** Render spins down free services after 15 minutes of inactivity (taking 30–50 seconds to wake up on the next visit). Furthermore, Render Free uses ephemeral storage; your bundled 4,134 baseline records are always safe, but newly added records reset if Render restarts the container.
 
 ---
 
-## Step 4: Connect Vercel to Render
+## 🏢 Method 3: Local Office Network (Zero Internet Needed)
 
-You have two easy ways to connect your Vercel frontend to your Render backend:
+If your team is in the same building or connected to the same Wi-Fi router:
 
-### Option A: Using the in-app "⚙️ Server" Button (Instant - No redeploy needed)
-1. Open your live Vercel app in your browser (`https://your-app.vercel.app`).
-2. Click the **⚙️ Server** button in the top navigation bar.
-3. Paste your Render backend URL (e.g. `https://registry-tracker-xxxx.onrender.com`).
-4. Click **Test Connection** to verify that it connects to your database.
-5. Click **Save & Connect**. Your browser will now save this connection and load your files immediately!
-
-### Option B: Automatic Vercel API Rewrite (Zero configuration for all visitors)
-1. Open [vercel.json](vercel.json) in your project.
-2. Add your Render URL to the `rewrites` section:
-   ```json
-   {
-     "version": 2,
-     "outputDirectory": "public",
-     "cleanUrls": true,
-     "rewrites": [
-       {
-         "source": "/api/:match*",
-         "destination": "https://YOUR-RENDER-APP.onrender.com/api/:match*"
-       }
-     ]
-   }
+1. Double-click `allow-firewall.bat` once (as Administrator).
+2. Double-click `Launch-Tracker.bat`.
+3. Check your computer's IP address (e.g. `192.168.1.50`).
+4. Any colleague on the same network can access the tracker by typing:
    ```
-3. Commit and push:
-   ```bash
-   git add vercel.json
-   git commit -m "Configure Vercel API rewrite to Render backend"
-   git push origin main
+   http://192.168.1.50:3000
    ```
-   Vercel will redeploy automatically, and all `/api/*` calls will be proxied straight to Render without any CORS or manual configuration needed by visitors!
