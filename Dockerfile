@@ -1,7 +1,12 @@
-# Multi-stage Docker build for Registry Office File Tracker
-FROM node:20-bookworm-slim AS builder
+# Production Docker container for Registry Office File Tracker
+FROM node:22-bookworm-slim
 
 WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+ENV DATA_DIR=/app/data
 
 # Install build dependencies for better-sqlite3 native compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -11,27 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev && npm rebuild better-sqlite3 --build-from-source
 
-# Runtime stage
-FROM node:20-bookworm-slim
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOST=0.0.0.0
-ENV DATA_DIR=/app/data
-
-# Copy built dependencies and app files
-COPY --from=builder /app/node_modules ./node_modules
-COPY package*.json ./
 COPY database.js ./
 COPY server.js ./
 COPY public ./public
 COPY data ./data
 
-# Ensure data directory exists
 RUN mkdir -p /app/data
 
 EXPOSE 3000
